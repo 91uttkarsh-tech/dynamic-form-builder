@@ -1,0 +1,35 @@
+services:
+  frontend:
+    build: ./client
+    container_name: react_frontend
+    ports:
+      - "3001:80"
+    depends_on:
+      - backend
+
+  mongo:
+    image: mongo:6
+    container_name: mongodb_container
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: [ "CMD", "mongo", "--eval", "db.adminCommand('ping')" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./server
+    container_name: node_backend
+    ports:
+      - "4000:4000"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/dynamic_forms
+    depends_on:
+      - mongo
+
+volumes:
+  mongo_data:
